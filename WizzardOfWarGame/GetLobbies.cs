@@ -8,7 +8,9 @@ namespace wow.Core.Extentions.WizzardOfWarGame
 
         public override void Execute(MessageData data)
         {
-            data.SendBack(data.SerializeAndSet(GameManager.Games));
+            data.SerializeAndSet(GameManager.Games);
+            data.type = "lobbiesResponse";
+            data.SendBack(data);
         }
 
         protected override CommandSettings GetSettings()

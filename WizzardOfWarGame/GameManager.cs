@@ -27,7 +27,7 @@ namespace wow.Core.Extentions.WizzardOfWarGame
             return tmr;
         }
 
-        public static List<Game> Games;
+        public static List<Game> Games = new List<Game>();
 
         class InvokationCounter
         {

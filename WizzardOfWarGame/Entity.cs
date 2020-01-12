@@ -1,10 +1,12 @@
 using System;
+using System.Runtime.Serialization;
 using Coflnet;
 using MessagePack;
+using Newtonsoft.Json;
 
 namespace wow.Core.Extentions.WizzardOfWarGame
 {
-    [MessagePackObject]
+    
     public abstract class Entity
     {
         public SourceReference Id;
@@ -15,6 +17,7 @@ namespace wow.Core.Extentions.WizzardOfWarGame
 
         public Direction Direction;
 
+        [JsonIgnore]
         public Game Game;
 
         public bool IsDead;
@@ -31,7 +34,7 @@ namespace wow.Core.Extentions.WizzardOfWarGame
 
         public abstract void Tick();
 
-        public abstract void Die(Entity opponent);
+        public abstract void Collision(Entity opponent);
 
         /// <summary>
         /// A move hit a wall

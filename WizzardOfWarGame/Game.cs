@@ -1,18 +1,42 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Coflnet;
+using Newtonsoft.Json;
 
 namespace wow.Core.Extentions.WizzardOfWarGame
 {
+    public class Map
+    {
+        public bool[][] InternalMap = JsonConvert.DeserializeObject<bool[][]>("[[true,true,false,true,true,true,true,true,true,true,true,true,true,true,true],[true,false,false,false,false,false,false,true,false,false,false,false,false,false,true],[true,false,true,true,true,true,false,true,false,true,true,true,true,false,true],[true,false,true,false,false,false,false,false,false,false,false,false,true,false,true],[true,false,false,false,true,false,true,true,true,false,true,false,false,false,true],[true,true,true,false,true,false,false,false,false,false,true,false,true,true,true],[true,false,false,false,true,false,true,true,true,false,true,false,false,false,true],[true,false,true,false,false,false,false,false,false,false,false,false,true,false,true],[true,false,true,true,true,true,false,true,false,true,true,true,true,false,true],[true,false,false,false,false,false,false,true,false,false,false,false,false,false,true],[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]]");
+
+        public bool IsFree(Position position)
+        {
+            if(position.x < 0 || position.x >= InternalMap.Length
+                || position.y < 0 || position.y >= InternalMap[0].Length)
+                {
+                    return false;
+                }
+            return !InternalMap[position.x][position.y];
+        }
+
+        public Position GetCenter()
+        {
+            return new Position(){x=InternalMap.Length/2,y=InternalMap[0].Length/2};
+        }
+    }
+
     public class Game : Referenceable, ITicks
     {
         private static CommandController _commands = new CommandController(globalCommands);
 
-        public bool[][] Map;
+        public Map Map = new Map(){};
 
-        public Dictionary<SourceReference,Entity> Entities;
+        public Dictionary<SourceReference,Entity> Entities = new Dictionary<SourceReference, Entity>();
 
-        public List<Player> Players;
+        public List<Player> Players = new List<Player>();
 
         public bool IsRunning;
 
@@ -22,6 +46,8 @@ namespace wow.Core.Extentions.WizzardOfWarGame
         static Game()
         {
             _commands.RegisterCommand<MoveCommand>();
+            _commands.RegisterCommand<ShootCommand>();
+            _commands.RegisterCommand<StartGameCommand>();
         }
 
         public override CommandController GetCommandController()
@@ -35,9 +61,66 @@ namespace wow.Core.Extentions.WizzardOfWarGame
             Entities[id].IsDead = true;
         }
 
+        public void Start()
+        {
+            foreach (var item in Players)
+            {
+                // assingn spawn Pos
+                item.Position = GetRespawnPos();
+
+                Spawn(item);
+            }
+
+            // spawn monsters
+            Spawn(new Enemy(){Position=Map.GetCenter(),Direction=Direction.Down});
+
+            IsRunning = true;
+        }
+
+        public void AddPlayer(MessageData data)
+        {
+            var connection = (data as ProxyServerMessageData).Connection as WoWProxy;
+
+            Task.Run(()=>{
+                Thread.Sleep(10);
+                connection.currentTarget = this.Id;
+                Console.WriteLine($"The id is: {this.Id}");
+            });
+
+
+            var player = new Player(){Id=data.sId,Connection=connection};
+            Players.Add(player);
+            Entities.Add(player.Id,player);
+        }
+
+        public Direction GetFreeDirection(Position position, Direction commingFrom)
+        {
+            var available = new List<Direction>();
+            var values = Enum.GetValues(typeof(Direction)).Cast<Direction>();
+            foreach (var item in values)
+            {
+                if(Map.IsFree(DetermineNewPosition(position,item)))
+                {
+                    available.Add(item);
+                }
+            }
+
+            if(available.Count > 1)
+            {
+                // remove the one we are coming from
+                available.Remove(commingFrom);
+            }
+            if(available.Count == 0)
+            {
+                return Direction.None;
+            }
+
+            return available[0];
+        }
+
         public Position GetRespawnPos()
         {
-            return new Position(){x=0,y=0};
+            return new Position(){x=1,y=1};
         }
 
         public void SendCommand(ProxyMessageData commandData)
@@ -48,12 +131,24 @@ namespace wow.Core.Extentions.WizzardOfWarGame
             }
         }
 
+        public void Spawn(Entity entity)
+        {
+            entity.Game = this;
+            entity.Id = SourceReference.NextLocalId;
+            
+            SendCommand(ProxyMessageData.Create("spawn",entity));
+            Entities.Add(entity.Id,entity);
+        }
+
+    
+
         public void Tick()
         {
             // update 
             foreach (var item in Entities.Values)
             {
-                item.Tick();
+                if(!item.IsDead)
+                    item.Tick();
             }
 
         }
@@ -61,10 +156,11 @@ namespace wow.Core.Extentions.WizzardOfWarGame
         public void MoveEnity(SourceReference Id,Direction direction)
         {
             var entity = GetEntity(Id);
+            entity.Direction = direction;
 
-            var newPosition = DetermineNewPosition(entity,direction);
+            var newPosition = DetermineNewPosition(entity.Position,direction);
 
-            if(Map[newPosition.x][newPosition.y]){
+            if(!Map.IsFree(newPosition)){
                 entity.HitWall(direction);
                 return;
             }
@@ -77,14 +173,16 @@ namespace wow.Core.Extentions.WizzardOfWarGame
                 var opponent = Entities.Values.Where(e=>e.Position == newPosition).First();
 
                 // both die now
-                opponent.Die(entity);
-                entity.Die(opponent);
+                opponent.Collision(entity);
+                entity.Collision(opponent);
             }
+
+            entity.Position = newPosition;
+            SendCommand(ProxyMessageData.Create("moveTo",newPosition));
         }
 
-        Position DetermineNewPosition(Entity entity,Direction direction)
+        public static Position DetermineNewPosition(Position position,Direction direction)
         {
-            var position = entity.Position;
             switch(direction)
             {
                 case Direction.Up:
@@ -104,7 +202,7 @@ namespace wow.Core.Extentions.WizzardOfWarGame
         }
 
 
-        Entity GetEntity(SourceReference id)
+        public Entity GetEntity(SourceReference id)
         {
             return Entities[id];
         }

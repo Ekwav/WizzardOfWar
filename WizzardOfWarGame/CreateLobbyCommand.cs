@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Coflnet;
 using MessagePack;
 using static JsonSerializer;
@@ -11,7 +13,19 @@ namespace wow.Core.Extentions.WizzardOfWarGame
 
         public override Referenceable CreateResource(MessageData data)
         {
-            return new Game(){Name=data.GetAs<Pramas>().Name};
+            var name = data.GetAs<Pramas>().Name;
+            if(GameManager.Games.Exists(g=>g.Name == name))
+            {
+                throw new CoflnetException("game_already_exists",$"A game with the name {name} already exists");
+            }
+
+            var game = new Game(){Name=name};
+
+            game.AddPlayer(data);
+
+            GameManager.Games.Add(game);
+            
+            return game;
         }
 
         protected override CommandSettings GetSettings()

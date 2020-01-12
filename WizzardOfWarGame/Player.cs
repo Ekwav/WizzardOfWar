@@ -14,8 +14,13 @@ namespace wow.Core.Extentions.WizzardOfWarGame
 
         public int WorthPoints => 1000;
 
+        public Player()
+        {
+            Type = EntitieType.Player;
+        }
 
-        public override void Die(Entity opponent)
+
+        public override void Collision(Entity opponent)
         {
             Game.SendCommand(ProxyMessageData.Create("respawn",new RespawnCommandParams(this.Id,Game.GetRespawnPos(),3)));
             // dang it, we are dead

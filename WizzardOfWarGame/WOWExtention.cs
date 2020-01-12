@@ -8,6 +8,7 @@ namespace wow.Core.Extentions.WizzardOfWarGame
         {
             controller.RegisterCommand<CreateLobbyCommand>();
             controller.RegisterCommand<GetLobbies>();
+            controller.RegisterCommand<JoinLobbyCommand>();
             // part of the core
             //controller.RegisterCommand<RegisterDevice>();
         }

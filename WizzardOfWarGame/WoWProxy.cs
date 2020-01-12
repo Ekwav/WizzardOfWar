@@ -4,6 +4,7 @@ using WebSocketSharp.Server;
 using Newtonsoft.Json;
 using System.Text;
 using System;
+using Coflnet.Serializer;
 
 namespace wow
 {
@@ -56,11 +57,29 @@ namespace wow
         }
     }
 
+    public class JsonNetEncoder : ISerializer
+    {
+        public T Deserialize<T>(byte[] args)
+        {
+            throw new NotImplementedException();
+        }
+
+        public byte[] Serialize<T>(T target)
+        {
+            
+            return  Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(target));
+        }
+    }
+
     public class WoWProxy : CoflnetWebsocketServer
     {
-        SourceReference currentTarget = new SourceReference(1,0);
-        SourceReference senderIdentity = SourceReference.NextLocalId;
+        public SourceReference currentTarget = new SourceReference(1,0);
+        public SourceReference senderIdentity = SourceReference.NextLocalId;
 
+        protected override void OnOpen()
+        {
+            this.Encoder = new JsonNetEncoder();
+        }
 
         protected override void OnMessage(MessageEventArgs e)
         {
@@ -75,7 +94,8 @@ namespace wow
             }
             catch (CoflnetException ex)
             {
-                Encoder.Send(new CoflnetExceptionTransmit(ex), this);
+                var data = JsonConvert.SerializeObject(new CoflnetExceptionTransmit(ex));
+                Send(data);
                 Track.instance.Error(ex.Message, e.Data, ex.StackTrace);
             }    
         }
@@ -84,5 +104,12 @@ namespace wow
         {
             Send(JsonConvert.SerializeObject(data));
         }
+
+        public override void SendBack(MessageData data)
+        {
+            // ignore standard send
+            Console.WriteLine("Stopped " + data.type);
+        }
+
     }
 }
