@@ -12,6 +12,10 @@ namespace wow
             Console.WriteLine("Hello World!");
             FileController.dataPaht += "/wow";
             Console.WriteLine(FileController.dataPaht);
+
+            var server = CoflnetSocket.socketServer;
+            server.AddWebSocketService<WoWProxy>("/wow",()=>new WoWProxy());
+
             ServerCore.Init(new SourceReference(1,0));
             Console.WriteLine("just sleeping a bit");
 

@@ -1,6 +1,6 @@
 <script>
- //  var ws = new WebSocket("ws://localhost:8000/socket");
- var ws = new WebSocket("ws://84.200.7.41:8889/socket",["dev"]);
+   var ws = new WebSocket("ws://localhost:8000/socket",["dev"]);
+// var ws = new WebSocket("ws://84.200.7.41:8889/socket",["dev"]);
 //var ws = new WebSocket("ws://localhost:8889/socket",["dev"]);
 
 ws.onmessage = function (evt) { 
@@ -14,7 +14,7 @@ ws.onmessage = function (evt) {
 
 function send(type,data)
 {
-    ws.send(JSON.stringify({t:type,m:btoa(data),r:[1,0]}));
+    ws.send(JSON.stringify({t:type,d:btoa(data),r:[1,0]}));
 }
 
 function sendData(type, data)

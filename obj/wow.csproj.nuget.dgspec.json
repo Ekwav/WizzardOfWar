@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/media/ekwav/Daten2/dev/wow/app/wow.csproj": {}
+    "/media/ekwav/Daten3/dev/wow/app/wow.csproj": {}
   },
   "projects": {
-    "/media/ekwav/Daten2/dev/wow/app/wow.csproj": {
+    "/media/ekwav/Daten3/dev/wow/app/wow.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/media/ekwav/Daten2/dev/wow/app/wow.csproj",
+        "projectUniqueName": "/media/ekwav/Daten3/dev/wow/app/wow.csproj",
         "projectName": "wow",
-        "projectPath": "/media/ekwav/Daten2/dev/wow/app/wow.csproj",
+        "projectPath": "/media/ekwav/Daten3/dev/wow/app/wow.csproj",
         "packagesPath": "/home/ekwav/.nuget/packages/",
-        "outputPath": "/media/ekwav/Daten2/dev/wow/app/obj/",
+        "outputPath": "/media/ekwav/Daten3/dev/wow/app/obj/",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "/usr/share/dotnet/sdk/NuGetFallbackFolder"
@@ -48,6 +48,10 @@
               "target": "Package",
               "version": "[2.2.0, )",
               "autoReferenced": true
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[12.0.3, )"
             },
             "RestSharp": {
               "target": "Package",
