@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Coflnet;
 
 namespace wow.Core.Extentions.WizzardOfWarGame
@@ -27,7 +28,22 @@ namespace wow.Core.Extentions.WizzardOfWarGame
         public override void Execute(MessageData data)
         {
             var game = data.GetTargetAs<Game>();
+            game.SendCommand(ProxyMessageData.Create("gameSync",new GameSyncParams(game.Map,game.Players)));
             game.Start();
+
+        }
+
+        public class GameSyncParams
+        {
+            public Map map;
+
+            public List<Player> players;
+
+            public GameSyncParams(Map map, List<Player> players)
+            {
+                this.map = map;
+                this.players = players;
+            }
         }
     }
 }

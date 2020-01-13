@@ -42,6 +42,8 @@ namespace wow.Core.Extentions.WizzardOfWarGame
 
         public string Name;
 
+        public Random random = new Random(15);
+
 
         static Game()
         {
@@ -99,7 +101,7 @@ namespace wow.Core.Extentions.WizzardOfWarGame
             var values = Enum.GetValues(typeof(Direction)).Cast<Direction>();
             foreach (var item in values)
             {
-                if(Map.IsFree(DetermineNewPosition(position,item)))
+                if(item != Direction.None &&  Map.IsFree(DetermineNewPosition(position,item)))
                 {
                     available.Add(item);
                 }
@@ -115,7 +117,7 @@ namespace wow.Core.Extentions.WizzardOfWarGame
                 return Direction.None;
             }
 
-            return available[0];
+            return available[random.Next(0,available.Count)];
         }
 
         public Position GetRespawnPos()
@@ -178,7 +180,19 @@ namespace wow.Core.Extentions.WizzardOfWarGame
             }
 
             entity.Position = newPosition;
-            SendCommand(ProxyMessageData.Create("moveTo",newPosition));
+            SendCommand(ProxyMessageData.Create("moveTo",new MoveToParams(entity.Id,newPosition,entity.Direction)));
+        }
+
+        public class MoveToParams : IdContainer
+        {
+            public Position position;
+            public Direction direction;
+
+            public MoveToParams(SourceReference id, Position newPosition, Direction direction) : base(id)
+            {
+                this.position = newPosition;
+                this.direction = direction;
+            }
         }
 
         public static Position DetermineNewPosition(Position position,Direction direction)

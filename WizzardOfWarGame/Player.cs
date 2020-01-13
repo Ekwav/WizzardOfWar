@@ -1,3 +1,4 @@
+using System.Runtime.Serialization;
 using Coflnet;
 
 namespace wow.Core.Extentions.WizzardOfWarGame
@@ -6,11 +7,21 @@ namespace wow.Core.Extentions.WizzardOfWarGame
         int WorthPoints {get;}
     }
 
+    [DataContract]
     public class Player : Entity,IWorthPoints
     {
         public WoWProxy Connection;
 
+        [DataMember]
         public long Points;
+
+        [DataMember]
+        public string Name;
+
+        [DataMember]
+        public override SourceReference Id {
+            get;set;
+        }
 
         public int WorthPoints => 1000;
 

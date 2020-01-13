@@ -9,7 +9,7 @@ namespace wow.Core.Extentions.WizzardOfWarGame
     
     public abstract class Entity
     {
-        public SourceReference Id;
+        public virtual SourceReference Id{get;set;}
 
         public EntitieType Type;
 
