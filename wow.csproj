@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MessagePack" Version="2.1.80" />
+    <PackageReference Include="MessagePack" Version="2.1.90" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="RestSharp" Version="106.12.0" />
     <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
